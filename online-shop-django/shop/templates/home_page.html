@@ -1,9 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- Price Range Filter -->
+<div class="container my-3">
+  <form method="GET" action="{% url 'shop:home_page' %}">
+    <label for="priceRange" class="form-label">Max Price: $<span id="priceValue">{{ request.GET.max_price|default:5000 }}</span></label>
+    <input type="range" class="form-range" min="0" max="5000" step="10" id="priceRange" name="max_price" value="{{ request.GET.max_price|default:5000 }}">
+    <button type="submit" class="btn btn-primary btn-sm mt-2">Filter</button>
+  </form>
+</div>
+
+<!-- Products List -->
 {% if products %}
-{% for product in products.object_list %}
-<div class="card me-2 mb-2" style="width: 16rem;">
+<div class="row">
+  {% for product in products %}
+  <div class="card me-2 mb-2" style="width: 16rem;">
     <img style="object-fit: cover;" class="card-img mt-2" width="268" height="200" src="{{ product.image.url }}">
     <div class="mt-3 text-center">
       <h5 class="card-title">{{ product.title }}</h5>
@@ -11,31 +22,39 @@
       <a href="{{ product.get_absolute_url }}" class="mb-3 btn btn-outline-primary w-100">Buy Now</a>
     </div>
   </div>
-{% endfor %}
-<!-- pagination -->
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
 <center class="mt-5">
   <div class="col-md-2">
     <ul class="pagination">
       {% if products.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a></li>
-      <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">{{products.previous_page_number}}</a></li>
+      <li class="page-item"><a class="page-link" href="?max_price={{ request.GET.max_price }}&page={{ products.previous_page_number }}">Previous</a></li>
+      <li class="page-item"><a class="page-link" href="?max_price={{ request.GET.max_price }}&page={{ products.previous_page_number }}">{{ products.previous_page_number }}</a></li>
       {% endif %}
-      <li class="page-item"><a class="page-link" href="?page={{ products.number }}">{{products.number}}</a></li>
+      <li class="page-item"><a class="page-link" href="?max_price={{ request.GET.max_price }}&page={{ products.number }}">{{ products.number }}</a></li>
       {% if products.has_next %}
-      <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">{{products.next_page_number}}</a></li>
-      <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">Next</a></li>
+      <li class="page-item"><a class="page-link" href="?max_price={{ request.GET.max_price }}&page={{ products.next_page_number }}">{{ products.next_page_number }}</a></li>
+      <li class="page-item"><a class="page-link" href="?max_price={{ request.GET.max_price }}&page={{ products.next_page_number }}">Next</a></li>
       {% endif %}
     </ul>
   </div>
 </center>
+
 {% else %}
 <div class="row">
-  <div class="col-md-2"></div>
-  <div class="col-md-8 mt-5 pt-5 text-center">
-    <br>
-    <h3 class="text-muted text-capitalize">No Products..!</h3>
+  <div class="col-md-12 mt-5 pt-5 text-center">
+    <h3 class="text-muted text-capitalize">No Products Found..!</h3>
   </div>
-  <div class="col-md-2"></div>
 </div>
 {% endif %}
+
+<script>
+  // Max price qiymatini avtomatik yangilash
+  document.getElementById("priceRange").oninput = function () {
+    document.getElementById("priceValue").innerText = this.value;
+  };
+</script>
+
 {% endblock %}

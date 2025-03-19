@@ -19,13 +19,23 @@ def paginat(request, list_objects):
         page_obj = p.page(p.num_pages)
     return page_obj
 
-
 def home_page(request):
-    """Display all products on the homepage"""
-    products = Product.objects.select_related('category').all()
-    context = {'products': paginat(request, products)}
-    return render(request, 'home_page.html', context)
+    max_price = request.GET.get('max_price', None)  # URL-dan max_price olish
+    products = Product.objects.all()  # Barcha mahsulotlarni olish
 
+    if max_price:
+        try:
+            max_price = float(max_price)  # max_price raqam ekanligini tekshirish
+            products = products.filter(price__lte=max_price)  # Narx bo‘yicha filter
+        except ValueError:
+            pass  # Agar noto‘g‘ri qiymat bo‘lsa, filter ishlamaydi
+
+    paginator = Paginator(products, 6)  # 6 tadan mahsulot chiqarish
+    page_number = request.GET.get("page")
+    products_page = paginator.get_page(page_number)  # Sahifalashni qo‘llash
+
+    context = {'products': products_page}
+    return render(request, 'home_page.html', context)
 
 def product_detail(request, slug):
     """Product detail page"""
